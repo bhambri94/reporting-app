@@ -1,10 +1,7 @@
 package main
 
 import (
-	"crypto/rand"
-	"fmt"
 	"log"
-	"os"
 	"os/exec"
 
 	"github.com/bhambri94/reporting-app/configs"
@@ -29,6 +26,16 @@ func main() {
 	log.Fatal(fasthttp.ListenAndServe(":8010", router.Handler))
 }
 
+func handler(ctx *fasthttp.RequestCtx) {
+	fh, err := ctx.FormFile("filekey")
+	if err != nil {
+		panic(err)
+	}
+	if err := fasthttp.SaveMultipartFile(fh, "filename.ext"); err != nil {
+		panic(err)
+	}
+}
+
 func addReportingResultsXML(ctx *fasthttp.RequestCtx) {
 	sugar.Infof("creating xml allure report......")
 	ctx.Response.Header.Set("Content-Type", "application/json")
@@ -36,25 +43,52 @@ func addReportingResultsXML(ctx *fasthttp.RequestCtx) {
 	password := ctx.UserValue("password")
 	if userName == configs.Configurations.AppUsername && password == configs.Configurations.AppPassword {
 		ctx.Response.SetStatusCode(201)
-		a := ctx.Request.Body()
-		f, err := os.Create("allure-results/" + generateUUID() + "-testsuite.xml")
+
+		fh, err := ctx.FormFile("file")
 		if err != nil {
-			fmt.Println(err)
+			sugar.Error(err)
 			ctx.Response.SetStatusCode(500)
-			successResponse := "{\"success\":false,\"response\":\"Unable to add report\"}"
+			successResponse := "{\"success\":false,\"response\":\"File key mentioned in request body is wrong\"}"
 			ctx.Write([]byte(successResponse))
 		}
-		fmt.Println(string(a))
-		fmt.Fprintln(f, string(a))
-		defer f.Close()
-		out, err := exec.Command("allure", "generate", "allure-results", "--clean", "-o", "allure-report").Output()
-		fmt.Println(string(out))
+		if err := fasthttp.SaveMultipartFile(fh, "uploads/latestreport.tar.gz"); err != nil {
+			sugar.Error(err)
+			ctx.Response.SetStatusCode(500)
+			successResponse := "{\"success\":false,\"response\":\"Unable to save request body file\"}"
+			ctx.Write([]byte(successResponse))
+		}
+
+		out, err := exec.Command("tar", "-xzvf", "uploads/filename.tar.gz", "-C", ".").Output()
 		if err != nil {
-			fmt.Println(err)
+			sugar.Error(err)
+			ctx.Response.SetStatusCode(500)
+			successResponse := "{\"success\":false,\"response\":\"Unable to unzip uploaded file\"}"
+			ctx.Write([]byte(successResponse))
+			return
+		} else {
+			sugar.Info(string(out))
+		}
+
+		out, err = exec.Command("cp", "-r", "allure-report/history", "allure-results/").Output()
+		if err != nil {
+			sugar.Error(err)
+			ctx.Response.SetStatusCode(500)
+			successResponse := "{\"success\":false,\"response\":\"Unable to unzip uploaded file\"}"
+			ctx.Write([]byte(successResponse))
+			return
+		} else {
+			sugar.Info(string(out))
+		}
+
+		out, err = exec.Command("allure", "generate", "allure-results", "--clean", "-o", "allure-report").Output()
+		if err != nil {
+			sugar.Error(err)
 			ctx.Response.SetStatusCode(500)
 			successResponse := "{\"success\":false,\"response\":\"Unable to generate new report\"}"
 			ctx.Write([]byte(successResponse))
 			return
+		} else {
+			sugar.Info(string(out))
 		}
 		successResponse := "{\"success\":true,\"response\":\"Added results to Allure reporter\"}"
 		ctx.Write([]byte(successResponse))
@@ -64,15 +98,4 @@ func addReportingResultsXML(ctx *fasthttp.RequestCtx) {
 		ctx.Write([]byte(successResponse))
 	}
 
-}
-
-func generateUUID() string {
-	b := make([]byte, 16)
-	_, err := rand.Read(b)
-	if err != nil {
-		log.Fatal(err)
-	}
-	uuid := fmt.Sprintf("%x-%x-%x-%x-%x",
-		b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
-	return uuid
 }
