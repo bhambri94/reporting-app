@@ -1,0 +1,22 @@
+{
+  "uid" : "83edc06c07f9ae9e47eb6dd1b683e4e2",
+  "children" : [ {
+    "name" : "webdriver.io page",
+    "children" : [ {
+      "name" : "should have the right title",
+      "uid" : "453477f927d5f8c",
+      "parentUid" : "4f7d17744ecdbd5cba658ae19edb9617",
+      "status" : "passed",
+      "time" : {
+        "start" : 1598122449666,
+        "stop" : 1598122451280,
+        "duration" : 1614
+      },
+      "flaky" : false,
+      "newFailed" : false,
+      "parameters" : [ "chrome" ]
+    } ],
+    "uid" : "webdriver.io page"
+  } ],
+  "name" : "packages"
+}
