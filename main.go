@@ -24,8 +24,9 @@ func main() {
 
 	router.POST(configs.Configurations.AddResultsXMLPath+"/user=:userName/password=:password", addReportingResultsXML)
 
-	// log.Fatal(fasthttp.ListenAndServe(":8010", router.Handler))
+	log.Fatal(fasthttp.ListenAndServe(":8010", router.Handler))
 	h := &fasthttp.Server{
+		Handler:            addReportingResultsXML,
 		MaxRequestBodySize: 20 * 1024 * 1024 * 1024,
 	}
 	if err := h.ListenAndServe(":8010"); err != nil {
