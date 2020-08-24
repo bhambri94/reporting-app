@@ -58,7 +58,7 @@ func addReportingResultsXML(ctx *fasthttp.RequestCtx) {
 			ctx.Write([]byte(successResponse))
 		}
 
-		out, err := exec.Command("tar", "-xzvf", "uploads/latestreport.tar.gz").Output()
+		out, err := exec.Command("tar", "-xzvf", "uploads/latestreport.tar.gz", "-C", ".").Output()
 		if err != nil {
 			sugar.Error(err)
 			ctx.Response.SetStatusCode(500)
