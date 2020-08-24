@@ -21,9 +21,17 @@ func main() {
 	defer logger.Sync() // flushes buffer, if any
 
 	router := fasthttprouter.New()
+
 	router.POST(configs.Configurations.AddResultsXMLPath+"/user=:userName/password=:password", addReportingResultsXML)
 
-	log.Fatal(fasthttp.ListenAndServe(":8010", router.Handler))
+	// log.Fatal(fasthttp.ListenAndServe(":8010", router.Handler))
+	h := &fasthttp.Server{
+		MaxRequestBodySize: 20 * 1024 * 1024 * 1024,
+	}
+	if err := h.ListenAndServe(":8010"); err != nil {
+		log.Panicf("error in ListenAndServe: %s", err)
+	}
+
 }
 
 func handler(ctx *fasthttp.RequestCtx) {
@@ -43,8 +51,8 @@ func addReportingResultsXML(ctx *fasthttp.RequestCtx) {
 	password := ctx.UserValue("password")
 	if userName == configs.Configurations.AppUsername && password == configs.Configurations.AppPassword {
 		ctx.Response.SetStatusCode(201)
-
 		fh, err := ctx.FormFile("file")
+
 		if err != nil {
 			sugar.Error(err)
 			ctx.Response.SetStatusCode(500)
