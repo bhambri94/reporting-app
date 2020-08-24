@@ -58,7 +58,7 @@ func addReportingResultsXML(ctx *fasthttp.RequestCtx) {
 			ctx.Write([]byte(successResponse))
 		}
 
-		out, err := exec.Command("tar", "-xzvf", "uploads/filename.tar.gz", "-C", ".").Output()
+		out, err := exec.Command("tar", "-xzvf", "uploads/latestreport.tar.gz", "-C", ".").Output()
 		if err != nil {
 			sugar.Error(err)
 			ctx.Response.SetStatusCode(500)
@@ -66,17 +66,15 @@ func addReportingResultsXML(ctx *fasthttp.RequestCtx) {
 			ctx.Write([]byte(successResponse))
 			return
 		} else {
+			sugar.Info("Success! created zip file into uploads folder")
 			sugar.Info(string(out))
 		}
 
-		out, err = exec.Command("cp", "-r", "allure-report/history", "allure-results/").Output()
+		out, err = exec.Command("cp", "-r", "allure-report/history", "allure-results").Output()
 		if err != nil {
 			sugar.Error(err)
-			ctx.Response.SetStatusCode(500)
-			successResponse := "{\"success\":false,\"response\":\"Unable to unzip uploaded file\"}"
-			ctx.Write([]byte(successResponse))
-			return
 		} else {
+			sugar.Info("Success! Allure history folder copied")
 			sugar.Info(string(out))
 		}
 
@@ -88,6 +86,7 @@ func addReportingResultsXML(ctx *fasthttp.RequestCtx) {
 			ctx.Write([]byte(successResponse))
 			return
 		} else {
+			sugar.Info("Success! Allure generate new report")
 			sugar.Info(string(out))
 		}
 		successResponse := "{\"success\":true,\"response\":\"Added results to Allure reporter\"}"
