@@ -8,10 +8,9 @@ import (
 )
 
 type Configs struct {
-	AppUsername                               string `json:"AppUsername"`
-	AppPassword                               string `json:"AppPassword"`
-	AddResultsXMLPath                         string `json:"AddResultsXMLPath"`
-	MultipleProductResponseSheetNameWithRange string `json:"MultipleProductResponseSheetNameWithRange"`
+	AppUsername       string `json:"AppUsername"`
+	AppPassword       string `json:"AppPassword"`
+	AddResultsXMLPath string `json:"AddResultsXMLPath"`
 }
 
 var (
