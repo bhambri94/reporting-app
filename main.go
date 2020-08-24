@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os/exec"
 
@@ -21,33 +22,23 @@ func main() {
 	defer logger.Sync() // flushes buffer, if any
 
 	router := fasthttprouter.New()
+	h := &fasthttp.Server{
+		Handler:            router.Handler,
+		MaxRequestBodySize: 2000 * 1024 * 1024 * 1024,
+	}
 
 	router.POST(configs.Configurations.AddResultsXMLPath+"/user=:userName/password=:password", addReportingResultsXML)
 
-	log.Fatal(fasthttp.ListenAndServe(":8010", router.Handler))
-	h := &fasthttp.Server{
-		Handler:            addReportingResultsXML,
-		MaxRequestBodySize: 20 * 1024 * 1024 * 1024,
-	}
 	if err := h.ListenAndServe(":8010"); err != nil {
 		log.Panicf("error in ListenAndServe: %s", err)
-	}
-
-}
-
-func handler(ctx *fasthttp.RequestCtx) {
-	fh, err := ctx.FormFile("filekey")
-	if err != nil {
-		panic(err)
-	}
-	if err := fasthttp.SaveMultipartFile(fh, "filename.ext"); err != nil {
-		panic(err)
 	}
 }
 
 func addReportingResultsXML(ctx *fasthttp.RequestCtx) {
 	sugar.Infof("creating xml allure report......")
 	ctx.Response.Header.Set("Content-Type", "application/json")
+	fmt.Println(string(ctx.Path()))
+
 	userName := ctx.UserValue("userName")
 	password := ctx.UserValue("password")
 	if userName == configs.Configurations.AppUsername && password == configs.Configurations.AppPassword {
