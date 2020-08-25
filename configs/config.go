@@ -11,6 +11,7 @@ type Configs struct {
 	AppUsername       string `json:"AppUsername"`
 	AppPassword       string `json:"AppPassword"`
 	AddResultsXMLPath string `json:"AddResultsXMLPath"`
+	RunAppOnPort      string `json:"RunAppOnPort"`
 }
 
 var (

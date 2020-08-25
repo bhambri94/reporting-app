@@ -29,7 +29,7 @@ func main() {
 
 	router.POST(configs.Configurations.AddResultsXMLPath+"/user=:userName/password=:password", addReportingResultsXML)
 
-	if err := h.ListenAndServe(":8010"); err != nil {
+	if err := h.ListenAndServe(":" + configs.Configurations.RunAppOnPort); err != nil {
 		log.Panicf("error in ListenAndServe: %s", err)
 	}
 }
